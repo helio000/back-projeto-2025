@@ -10,9 +10,6 @@
   "author": "helio000",
   "license": "ISC",
   "description": "API Node.js com Express e Prisma",
-  "prisma": {
-    "seed": "node prisma/seed.js"
-  },
   "dependencies": {
     "@prisma/client": "^6.5.0",
     "cors": "^2.8.5",
