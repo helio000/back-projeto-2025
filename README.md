@@ -125,3 +125,8 @@ npx prisma migrate dev --name ajuste
  Para visualizar e editar os dados do banco, utilize o Prisma Studio:
 
 npx prisma studio
+
+.env
+```js
+DATABASE_URL="mysql://root@localhost:3306/projeto-2025" 
+```
