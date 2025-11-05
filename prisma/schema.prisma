@@ -3,48 +3,53 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model Aluno {
-  id          Int        @id @default(autoincrement())
-  nome        String
-  email       String     @unique
-  telefone    String
-  datanasc    DateTime?
-  arteMarcial String
-  RA          Int        @unique
-  matriculas  Matricula[]  // Relação com Matricula
+  id             Int         @id @default(autoincrement())
+  nome           String
+  email          String      @unique
+  telefone       String
+  datanasc       DateTime
+  arteMarcial    String
+  RA             Int
+  notaTecnica    Float?
+  notaDisciplina Float?
+  frequencia     Float?
+
+  matriculas     Matricula[]  // relação 1:N com Matricula
 }
 
 model Matricula {
-  id            Int       @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   alunoId       Int
   turmaId       Int
-  dataMatricula DateTime? @default(now()) @db.Date
-  aluno         Aluno     @relation(fields: [alunoId], references: [id])
-  turma         Turma     @relation(fields: [turmaId], references: [id])
-  @@index([alunoId])
-  @@index([turmaId])
+  dataMatricula DateTime? @default(now())
+
+  aluno         Aluno    @relation(fields: [alunoId], references: [id])
+  turma         Turma    @relation(fields: [turmaId], references: [id])
 }
 
 model Professor {
-  id          Int        @id @default(autoincrement())
-  nome        String     @db.VarChar(100)
-  email       String     @unique @db.VarChar(100)
-  telefone    String?    @db.VarChar(20)
-  arteMarcial String?    @db.VarChar(50)
-  turmas      Turma[]
+  id          Int      @id @default(autoincrement())
+  nome        String
+  cpf         String   @unique
+  email       String   @unique
+  telefone    String?
+  arteMarcial String?
+  datanasc    DateTime?
+
+  turmas      Turma[]   // relação 1:N com Turma
 }
 
 model Turma {
   id          Int        @id @default(autoincrement())
-  nome        String     @db.VarChar(50)
-  arteMarcial String?    @db.VarChar(50)
+  nome        String
+  arteMarcial String?
   professorId Int?
-  matriculas  Matricula[]
   professor   Professor? @relation(fields: [professorId], references: [id])
 
-  @@index([professorId])
+  matriculas  Matricula[] // relação 1:N com Matricula
 }
