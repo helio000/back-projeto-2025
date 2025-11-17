@@ -2,66 +2,47 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const { create, read, readOne, update, remove, login, updateNotas } = require('../src/controllers/aluno.js');
-const {
-  create: createProfessor,
-  read: readProfessor,
-  readOne: readOneProfessor,
-  update: updateProfessor,
-  remove: removeProfessor,
-  loginProfessor
-} = require('../src/controllers/professor.js');
-
-const {
-  read: readPlanejamento,
-  create: createPlanejamento,
-  update: updatePlanejamento,
-  remove: removePlanejamento
-} = require('../src/controllers/planejamento.js');
-
+// Controllers (agora com o caminho correto)
+const alunoController = require('./src/controllers/aluno.js');
+const professorController = require('./src/controllers/professor.js');
+const planejamentoController = require('./src/controllers/planejamento.js');
 
 const app = express();
 const port = process.env.PORT || 3100;
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Rotas Alunos
-app.get('/alunos', read);
-app.get('/alunos/:id', readOne);
-app.post('/alunos', create);
-app.put('/alunos/:id', update);
-app.delete('/alunos/:id', remove);
+// ROTAS ALUNOS
+app.get('/alunos', alunoController.read);
+app.get('/alunos/:id', alunoController.readOne);
+app.post('/alunos', alunoController.create);
+app.put('/alunos/:id', alunoController.update);
+app.delete('/alunos/:id', alunoController.remove);
 
-// Login Alunos
-app.post('/alunos/login', login);
+app.post('/alunos/login', alunoController.login);
+app.put('/alunos/:id/notas', alunoController.updateNotas);
 
-// Rota para atualizar as notas dos alunos
-app.put('/alunos/:id/notas', updateNotas);
+// ROTAS PROFESSORES
+app.get('/professores', professorController.read);
+app.get('/professores/:id', professorController.readOne);
+app.post('/professores', professorController.create);
+app.put('/professores/:id', professorController.update);
+app.delete('/professores/:id', professorController.remove);
 
-// Rotas Professores
-app.get('/professores', readProfessor);
-app.get('/professores/:id', readOneProfessor);
-app.post('/professores', createProfessor);
-app.put('/professores/:id', updateProfessor);
-app.delete('/professores/:id', removeProfessor);
+app.post('/professores/login', professorController.loginProfessor);
 
-// Login Professores
-app.post('/professores/login', loginProfessor);
+// ROTAS PLANEJAMENTO
+app.get('/planejamentos', planejamentoController.read);
+app.post('/planejamentos', planejamentoController.create);
+app.put('/planejamentos/:id', planejamentoController.update);
+app.delete('/planejamentos/:id', planejamentoController.remove);
 
-// ✅ Rotas Planejamento
-app.get('/planejamentos', readPlanejamento);
-app.post('/planejamentos', createPlanejamento);
-app.put('/planejamentos/:id', updatePlanejamento);
-app.delete('/planejamentos/:id', removePlanejamento);
-
-// Rota inicial
+// ROTA INICIAL
 app.get('/', (req, res) => {
   res.send('API funcionando!');
 });
 
-// Start do servidor
 app.listen(port, () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
 });
