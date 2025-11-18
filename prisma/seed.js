@@ -1,18 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const bcrypt = require('bcrypt');
-
-const encripta = async (senha) => {
-    if (!senha) return null;
-    try {
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(senha, salt);
-        return hash;
-    } catch (error) {
-        console.error('Erro ao criar hash:', error);
-        throw new Error('Erro ao criar hash');
-    }
-}
 
 async function main() {
     await prisma.professor.createMany({
