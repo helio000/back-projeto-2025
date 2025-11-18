@@ -62,4 +62,8 @@ app.get('/', (req, res) => {
 // =========================
 // 🚀 INICIAR SERVIDOR
 // =========================
+
 app.listen(port, () => console.log(`Servidor rodando em http://localhost:${port}`));
+
+app.listen(port, () => console.log(`Servidor rodando em http://localhost:${port}`));
+
