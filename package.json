@@ -4,7 +4,7 @@
   "main": "api/server.js",
   "scripts": {
     "dev": "npx nodemon api/server.js",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma db seed && prisma generate"
   },
   "keywords": [],
   "author": "helio000",
@@ -15,6 +15,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0"
+  },
+  "prisma":{
+    "seed": "node prisma/seed.js"
   },
   "devDependencies": {
     "prisma": "^6.5.0"
