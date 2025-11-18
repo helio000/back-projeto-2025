@@ -20,9 +20,9 @@ routes.get('/', (req, res) => {
 routes.post('/alunos', Aluno.create);
 routes.get('/alunos', Aluno.read);
 routes.get('/alunos/:id', Aluno.readOne);
-routes.put('/alunos/:id', Aluno.update);
 routes.patch('/alunos/:id', Aluno.update);
 routes.delete('/alunos/:id', Aluno.remove);
+routes.post('/alunos/:id/update', Aluno.update);
 
 // Login do Aluno
 routes.post('/alunos/login', Aluno.login);
