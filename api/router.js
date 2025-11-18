@@ -8,7 +8,7 @@ const Turma = require('./src/controllers/turma');
 const Matricula = require('./src/controllers/matricula');
 
 // 🔑 CORREÇÃO AQUI: Importação do Controller de Planejamento
-const Planejamento = require('./src/controllers/Planejamento'); // 👈 Linha corrigida
+const Planejamento = require('./src/controllers/planejamento'); // 👈 Linha corrigida
 const AulaSemana = require('./src/controllers/aulaSemana'); 
 
 // Rota inicial
