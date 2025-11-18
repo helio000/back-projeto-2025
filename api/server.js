@@ -2,47 +2,64 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-// Controllers (agora com o caminho correto)
-const alunoController = require('./src/controllers/aluno.js');
-const professorController = require('./src/controllers/professor.js');
-const planejamentoController = require('./src/controllers/planejamento.js');
+const Aluno = require('./src/controllers/aluno.js');
+const Professor = require('./src/controllers/professor.js');
+const Planejamento = require('./src/controllers/planejamento.js');
 
 const app = express();
 const port = process.env.PORT || 3100;
 
+// =========================
+// 🔧 Middlewares
+// =========================
 app.use(cors());
 app.use(express.json());
 
-// ROTAS ALUNOS
-app.get('/alunos', alunoController.read);
-app.get('/alunos/:id', alunoController.readOne);
-app.post('/alunos', alunoController.create);
-app.put('/alunos/:id', alunoController.update);
-app.delete('/alunos/:id', alunoController.remove);
+// =========================
+// 👨‍🎓 ROTAS - ALUNOS
+// =========================
+app.get('/alunos', Aluno.read);
+app.get('/alunos/:id', Aluno.readOne);
+app.post('/alunos', Aluno.create);
+app.put('/alunos/:id', Aluno.update);
+app.patch('/alunos/:id', Aluno.update);  // agora PATCH funciona também
+app.delete('/alunos/:id', Aluno.remove);
 
-app.post('/alunos/login', alunoController.login);
-app.put('/alunos/:id/notas', alunoController.updateNotas);
+// Login aluno
+app.post('/alunos/login', Aluno.login);
 
-// ROTAS PROFESSORES
-app.get('/professores', professorController.read);
-app.get('/professores/:id', professorController.readOne);
-app.post('/professores', professorController.create);
-app.put('/professores/:id', professorController.update);
-app.delete('/professores/:id', professorController.remove);
+// Atualizar notas
+app.put('/alunos/:id/notas', Aluno.updateNotas);
 
-app.post('/professores/login', professorController.loginProfessor);
+// =========================
+// 👨‍🏫 ROTAS - PROFESSORES
+// =========================
+app.get('/professores', Professor.read);
+app.get('/professores/:id', Professor.readOne);
+app.post('/professores', Professor.create);
+app.put('/professores/:id', Professor.update);
+app.patch('/professores/:id', Professor.update);
+app.delete('/professores/:id', Professor.remove);
 
-// ROTAS PLANEJAMENTO
-app.get('/planejamentos', planejamentoController.read);
-app.post('/planejamentos', planejamentoController.create);
-app.put('/planejamentos/:id', planejamentoController.update);
-app.delete('/planejamentos/:id', planejamentoController.remove);
+// Login professor
+app.post('/professores/login', Professor.loginProfessor);
 
-// ROTA INICIAL
+// =========================
+// 📘 ROTAS - PLANEJAMENTO
+// =========================
+app.get('/planejamentos', Planejamento.read);
+app.post('/planejamentos', Planejamento.create);
+app.put('/planejamentos/:id', Planejamento.update);
+app.delete('/planejamentos/:id', Planejamento.remove);
+
+// =========================
+// 🌐 ROTA INICIAL
+// =========================
 app.get('/', (req, res) => {
-  res.send('API funcionando!');
+  res.json({ status: "API funcionando!" });
 });
 
-app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
-});
+// =========================
+// 🚀 INICIAR SERVIDOR
+// =========================
+app.listen(port, () => console.log(`Servidor rodando em http://localhost:${port}`));
