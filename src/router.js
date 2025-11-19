@@ -3,7 +3,6 @@ const routes = express.Router();
 
 const Aluno = require('./controllers/aluno');
 const Professor = require('./controllers/professor');
-const Telefone = require('./controllers/telefone');
 const Turma = require('./controllers/turma');
 const Matricula = require('./controllers/matricula');
 const Planejamento = require('./controllers/planejamento');
@@ -30,13 +29,6 @@ routes.get('/professores/:id', Professor.readOne);
 routes.put('/professores/:id', Professor.update);
 routes.patch('/professores/:id', Professor.update);
 routes.delete('/professores/:id', Professor.remove);
-
-routes.post('/telefones', Telefone.create);
-routes.get('/telefones', Telefone.read);
-routes.get('/telefones/:id', Telefone.readOne);
-routes.put('/telefones/:id', Telefone.update);
-routes.patch('/telefones/:id', Telefone.update);
-routes.delete('/telefones/:id', Telefone.remove);
 
 routes.post('/turmas', Turma.create);
 routes.get('/turmas', Turma.read);
