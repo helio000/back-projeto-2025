@@ -47,32 +47,14 @@ const update = async (req, res) => {
   if (isNaN(idNum)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    const { email, cpf, ...rest } = req.body;
-
-    if (email) {
-      const existing = await prisma.professor.findUnique({ where: { email: email.trim().toLowerCase() } });
-      if (existing && existing.id !== idNum) return res.status(400).json({ error: 'Email já existe para outro professor!' });
-    }
-
-    if (cpf) {
-      const cpfExists = await prisma.professor.findUnique({ where: { cpf: cpf.trim() } });
-      if (cpfExists && cpfExists.id !== idNum) return res.status(400).json({ error: 'CPF já cadastrado!' });
-    }
-
-    // Atualiza professor no banco de dados
     const professor = await prisma.professor.update({
       where: { id: idNum },
-      data: {
-        email: email?.trim().toLowerCase(),
-        cpf: cpf?.trim(),
-        ...rest
-      },
+      data: req.body,
     });
 
-    res.status(200).json(professor);
+    res.status(202).json(professor);
   } catch (error) {
-    console.error("Erro ao atualizar professor:", error);
-    res.status(500).json({ error: "Erro interno do servidor." });
+    res.status(400).json({ error: "Envie um dos campos a ser alterado" });
   }
 };
 
