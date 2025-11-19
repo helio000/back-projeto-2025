@@ -13,6 +13,10 @@ const create = async (req, res) => {
     if (existingAluno) {
       return res.status(400).json({ error: "Já existe um aluno cadastrado com este e-mail." });
     }
+    // Gera RA caso não venha
+    if (!RA) {
+      RA = Math.floor(100000 + Math.random() * 900000);
+    }
 
     // Criação do aluno
     const aluno = await prisma.aluno.create({
