@@ -28,7 +28,7 @@ const readOne = async (req, res) => {
   const { id } = req.params;
   try {
     const matricula = await prisma.matricula.findUnique({
-      where: { id: Number(id) },
+      where: { id: Number(id) },include: { aluno: true, turma: true },
     });
 
     if (!matricula) {

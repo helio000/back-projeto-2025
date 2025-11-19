@@ -29,6 +29,12 @@ const readOne = async (req, res) => {
   try {
     const turma = await prisma.turma.findUnique({
       where: { id: Number(id) },
+      include: { 
+        professor: true,
+        matriculas: {
+          include: { aluno: true }
+        }
+      },
     });
     if (!turma) return res.status(404).json({ error: 'Turma não encontrada' });
     res.status(200).json(turma);

@@ -32,7 +32,7 @@ const readOne = async (req, res) => {
   if (isNaN(idNum)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    const professor = await prisma.professor.findUnique({ where: { id: idNum } });
+    const professor = await prisma.professor.findUnique({ where: { id: idNum }, include: { turmas: true } });
     if (!professor) return res.status(404).json({ error: 'Professor não encontrado' });
     res.status(200).json(professor);
   } catch (error) {
