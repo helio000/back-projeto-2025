@@ -4,37 +4,9 @@ const prisma = new PrismaClient();
 // Criar professor
 const create = async (req, res) => {
   try {
-    const { nome, email, telefone, arteMarcial, datanasc, cpf } = req.body;
-
-    // Verifica se todos os campos obrigatórios estão presentes
-    if (!nome || !email || !telefone || !datanasc || !cpf) {
-      return res.status(400).json({ error: "Todos os campos obrigatórios devem ser preenchidos." });
-    }
-
-    // Verifica se já existe um professor com o mesmo email ou cpf
-    const existing = await prisma.professor.findUnique({
-      where: { email: email.trim().toLowerCase() }
-    });
-    if (existing) return res.status(400).json({ error: 'Email já existe para outro professor!' });
-
-    const cpfExists = await prisma.professor.findUnique({
-      where: { cpf: cpf.trim() }
-    });
-    if (cpfExists) return res.status(400).json({ error: 'CPF já cadastrado!' });
-
-    // Converte a data de nascimento corretamente
-    const dataNascimento = new Date(datanasc);  // Garantir que a data está no formato correto
-
     // Criação do professor no banco de dados
     const professor = await prisma.professor.create({
-      data: {
-        nome: nome.trim(),
-        email: email.trim().toLowerCase(),
-        telefone: telefone.trim(),
-        arteMarcial: arteMarcial?.trim(),
-        datanasc: dataNascimento,
-        cpf: cpf.trim()
-      },
+      data: req.body,
     });
 
     res.status(201).json(professor);
