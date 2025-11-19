@@ -13,29 +13,11 @@ const create = async (req, res) => {
     if (existingAluno) {
       return res.status(400).json({ error: "Já existe um aluno cadastrado com este e-mail." });
     }
-
-    // CORREÇÃO: tratar arteMarcial e RA antes de enviar ao Prisma
-    let { nome, email, telefone, arteMarcial, RA } = req.body;
-
-    // Se vier como array (checkbox) -> transforma em string
-    if (Array.isArray(arteMarcial)) {
-      arteMarcial = arteMarcial.join(", ");
-    }
-
-    // Converter RA para número
-    if (RA) {
-      RA = Number(RA);
-    }
+ 
 
     // Criação do aluno
     const aluno = await prisma.aluno.create({
-      data: {
-        nome,
-        email: email.trim().toLowerCase(),
-        telefone,
-        arteMarcial,
-        RA
-      },
+      data: req.body,
     });
 
     res.status(201).json(aluno);
@@ -86,15 +68,6 @@ const update = async (req, res) => {
   try {
     let { nome, email, telefone, datanasc, arteMarcial, RA } = req.body;
 
-    // CORREÇÃO: caso venha array no update também
-    if (Array.isArray(arteMarcial)) {
-      arteMarcial = arteMarcial.join(", ");
-    }
-
-    if (RA) {
-      RA = Number(RA);
-    }
-
     let dataValida = undefined;
     if (datanasc) {
       dataValida = new Date(datanasc);
@@ -110,8 +83,8 @@ const update = async (req, res) => {
         email: email?.trim()?.toLowerCase(),
         telefone: telefone?.trim(),
         datanasc: dataValida,
-        arteMarcial,
-        RA
+        arteMarcial: arteMarcial?.trim(),
+        RA: RA ? Number(RA) : undefined
       },
     });
 
