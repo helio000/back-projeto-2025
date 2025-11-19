@@ -11,8 +11,7 @@ const create = async (req, res) => {
 
     res.status(201).json(professor);
   } catch (error) {
-    console.error("Erro ao criar professor:", error);
-    res.status(500).json({ error: "Erro interno do servidor." });
+    res.status(400).json({ error: "Envie pelo menos nome, cpf e email" });
   }
 };
 
