@@ -5,8 +5,15 @@ const router = require('../src/router');
 
 const port = process.env.PORT || 3100;
 const app = express();
+
 app.use(express.json());
-app.use(cors());
+
+// CORS liberado para web, mobile, GitHub Pages e Vercel
+app.use(cors({
+  origin: "*",
+  methods: "GET, POST, PUT, DELETE, PATCH",
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 app.use(router);
 
