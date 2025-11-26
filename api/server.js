@@ -17,7 +17,7 @@ const isValidPhone = (telefone) => {
   return regex.test(telefone);
 };
 
-// Função para evitar duplicação de código para criação de aluno e professor
+// Função para criar aluno ou professor evitando duplicação de código
 const createEntity = (entityType, data, collection) => {
   const { nome, email, telefone, arteMarcial } = data;
 
@@ -40,6 +40,14 @@ const createEntity = (entityType, data, collection) => {
   collection.push(entity);
   return { status: 201, message: `${entityType} criado com sucesso.`, entity };
 };
+
+// ===== Rota raiz =====
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: "sucesso",
+    message: "API funcionando! Use /alunos ou /professores"
+  });
+});
 
 // ===== Alunos =====
 // Criar aluno
