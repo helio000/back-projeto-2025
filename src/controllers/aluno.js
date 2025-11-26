@@ -1,29 +1,57 @@
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 // Criar aluno
 const create = async (req, res) => {
   try {
+    let { nome, email, telefone, datanasc, arteMarcial, RA } = req.body;
+
+    // Validação básica
+    if (!nome || !email || !telefone || !datanasc || !arteMarcial) {
+      return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+    }
+
+    // Validação de data
+    const dataValida = new Date(datanasc);
+    if (isNaN(dataValida)) {
+      return res.status(400).json({ error: "Data de nascimento inválida." });
+    }
+
+    // Gera RA caso não venha
+    if (!RA) {
+      RA = Math.floor(100000 + Math.random() * 900000);
+    }
+
     // Verifica se existe email já cadastrado
     let existingAluno = null;
-    existingAluno = await prisma.aluno.findUnique({
-      where: { email: req.body.email.trim().toLowerCase() },
-    });
+    try {
+      existingAluno = await prisma.aluno.findUnique({
+        where: { email: email.trim().toLowerCase() },
+      });
+    } catch (_) {
+      // se o campo email não for unique, ignora
+    }
 
     if (existingAluno) {
       return res.status(400).json({ error: "Já existe um aluno cadastrado com este e-mail." });
     }
- 
 
     // Criação do aluno
     const aluno = await prisma.aluno.create({
-      data: req.body,
+      data: {
+        nome: nome.trim(),
+        email: email.trim().toLowerCase(),
+        telefone: telefone.trim(),
+        datanasc: dataValida,
+        arteMarcial: arteMarcial.trim(),
+        RA: Number(RA)
+      },
     });
 
     res.status(201).json(aluno);
   } catch (error) {
     console.error("Erro em create aluno:", error);
-    res.status(400).json({ error: "Envie ao menos os dados: nome, email, telefone, arteMarcial e RA" });
+    res.status(500).json({ error: "Erro interno do servidor." });
   }
 };
 
@@ -136,7 +164,7 @@ const remove = async (req, res) => {
   }
 
   try {
-    // verifica primeiro se existe
+    // Verifica primeiro se existe
     const existe = await prisma.aluno.findUnique({ where: { id } });
 
     if (!existe) {
