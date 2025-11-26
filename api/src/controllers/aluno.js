@@ -1,5 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Simula o Prisma com arrays em memória
+let alunos = [];
 
 // Criar aluno
 const create = async (req, res) => {
@@ -15,19 +15,21 @@ const create = async (req, res) => {
 
     if (!RA) RA = Math.floor(100000 + Math.random() * 900000);
 
-    const existingAluno = await prisma.aluno.findFirst({ where: { OR: [{ email: email.trim().toLowerCase() }, { RA }] } });
+    const existingAluno = alunos.find(a => a.email === email.trim().toLowerCase() || a.RA === Number(RA));
     if (existingAluno) return res.status(400).json({ error: "Aluno já cadastrado." });
 
-    const aluno = await prisma.aluno.create({
-      data: {
-        nome: nome.trim(),
-        email: email.trim().toLowerCase(),
-        telefone: telefone.trim(),
-        datanasc: dataValida,
-        arteMarcial: arteMarcial.trim(),
-        RA: Number(RA)
-      }
-    });
+    const aluno = {
+      id: alunos.length + 1,
+      nome: nome.trim(),
+      email: email.trim().toLowerCase(),
+      telefone: telefone.trim(),
+      datanasc: dataValida,
+      arteMarcial: arteMarcial.trim(),
+      RA: Number(RA),
+      matriculas: []
+    };
+
+    alunos.push(aluno);
 
     res.status(201).json(aluno);
   } catch (error) {
@@ -39,9 +41,6 @@ const create = async (req, res) => {
 // Listar alunos
 const read = async (req, res) => {
   try {
-    const alunos = await prisma.aluno.findMany({
-      include: { matriculas: true }
-    });
     res.status(200).json(alunos);
   } catch (error) {
     console.error(error);
@@ -55,10 +54,7 @@ const readOne = async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    const aluno = await prisma.aluno.findUnique({
-      where: { id },
-      include: { matriculas: true }
-    });
+    const aluno = alunos.find(a => a.id === id);
     if (!aluno) return res.status(404).json({ error: "Aluno não encontrado" });
 
     res.status(200).json(aluno);
@@ -74,7 +70,7 @@ const login = async (req, res) => {
   if (!email) return res.status(400).json({ error: "Email obrigatório" });
 
   try {
-    const aluno = await prisma.aluno.findUnique({ where: { email: email.trim().toLowerCase() } });
+    const aluno = alunos.find(a => a.email === email.trim().toLowerCase());
     if (!aluno) return res.status(401).json({ error: "Aluno não encontrado" });
 
     res.status(200).json({ message: "Login bem-sucedido", aluno });

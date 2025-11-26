@@ -1,6 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
+// Simula o Prisma com arrays em memória
+let professores = [];
 
 // Criar professor
 const create = async (req, res) => {
@@ -13,30 +12,27 @@ const create = async (req, res) => {
     }
 
     // Verifica se já existe um professor com o mesmo email ou cpf
-    const existing = await prisma.professor.findUnique({
-      where: { email: email.trim().toLowerCase() }
-    });
+    const existing = professores.find(p => p.email === email.trim().toLowerCase());
     if (existing) return res.status(400).json({ error: 'Email já existe para outro professor!' });
 
-    const cpfExists = await prisma.professor.findUnique({
-      where: { cpf: cpf.trim() }
-    });
+    const cpfExists = professores.find(p => p.cpf === cpf.trim());
     if (cpfExists) return res.status(400).json({ error: 'CPF já cadastrado!' });
 
     // Converte a data de nascimento corretamente
-    const dataNascimento = new Date(datanasc);  // Garantir que a data está no formato correto
+    const dataNascimento = new Date(datanasc);
 
-    // Criação do professor no banco de dados
-    const professor = await prisma.professor.create({
-      data: {
-        nome: nome.trim(),
-        email: email.trim().toLowerCase(),
-        telefone: telefone.trim(),
-        arteMarcial: arteMarcial?.trim() || null,  // Se não for fornecido, deixa como null
-        datanasc: dataNascimento,
-        cpf: cpf.trim()
-      },
-    });
+    // Criação do professor no banco de dados (simulado em memória)
+    const professor = {
+      id: professores.length + 1,
+      nome: nome.trim(),
+      email: email.trim().toLowerCase(),
+      telefone: telefone.trim(),
+      arteMarcial: arteMarcial?.trim() || null,  // Se não for fornecido, deixa como null
+      datanasc: dataNascimento,
+      cpf: cpf.trim()
+    };
+
+    professores.push(professor);
 
     res.status(201).json(professor); // Retorna o professor criado
   } catch (error) {
@@ -48,7 +44,6 @@ const create = async (req, res) => {
 // Listar todos os professores
 const read = async (req, res) => {
   try {
-    const professores = await prisma.professor.findMany();
     res.status(200).json(professores);
   } catch (error) {
     console.error("Erro ao buscar professores:", error);
@@ -62,7 +57,7 @@ const readOne = async (req, res) => {
   if (isNaN(idNum)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    const professor = await prisma.professor.findUnique({ where: { id: idNum } });
+    const professor = professores.find(p => p.id === idNum);
     if (!professor) return res.status(404).json({ error: 'Professor não encontrado' });
     res.status(200).json(professor);
   } catch (error) {
@@ -81,27 +76,25 @@ const update = async (req, res) => {
 
     // Verifica se já existe outro professor com o mesmo email ou cpf
     if (email) {
-      const existing = await prisma.professor.findUnique({ where: { email: email.trim().toLowerCase() } });
+      const existing = professores.find(p => p.email === email.trim().toLowerCase());
       if (existing && existing.id !== idNum) return res.status(400).json({ error: 'Email já existe para outro professor!' });
     }
 
     if (cpf) {
-      const cpfExists = await prisma.professor.findUnique({ where: { cpf: cpf.trim() } });
+      const cpfExists = professores.find(p => p.cpf === cpf.trim());
       if (cpfExists && cpfExists.id !== idNum) return res.status(400).json({ error: 'CPF já cadastrado!' });
     }
 
-    // Atualiza professor no banco de dados
-    const professor = await prisma.professor.update({
-      where: { id: idNum },
-      data: {
-        nome: nome?.trim(),
-        email: email?.trim().toLowerCase(),
-        telefone: telefone?.trim(),
-        arteMarcial: arteMarcial?.trim() || null,  // Se não for fornecido, mantém null
-        datanasc: datanasc ? new Date(datanasc) : undefined,  // Caso a data não seja fornecida, não atualiza
-        cpf: cpf?.trim()
-      },
-    });
+    // Atualiza professor em memória
+    const professor = professores.find(p => p.id === idNum);
+    if (!professor) return res.status(404).json({ error: 'Professor não encontrado' });
+
+    professor.nome = nome?.trim() || professor.nome;
+    professor.email = email?.trim().toLowerCase() || professor.email;
+    professor.telefone = telefone?.trim() || professor.telefone;
+    professor.arteMarcial = arteMarcial?.trim() || professor.arteMarcial;
+    professor.datanasc = datanasc ? new Date(datanasc) : professor.datanasc;
+    professor.cpf = cpf?.trim() || professor.cpf;
 
     res.status(200).json(professor);
   } catch (error) {
@@ -116,7 +109,10 @@ const remove = async (req, res) => {
   if (isNaN(idNum)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    await prisma.professor.delete({ where: { id: idNum } });
+    const index = professores.findIndex(p => p.id === idNum);
+    if (index === -1) return res.status(404).json({ error: 'Professor não encontrado' });
+
+    professores.splice(index, 1);
     res.status(200).json({ message: 'Professor removido com sucesso' });
   } catch (error) {
     console.error("Erro ao remover professor:", error);
@@ -131,13 +127,9 @@ const loginProfessor = async (req, res) => {
   if (!nome || !email) return res.status(400).json({ error: "Nome e e-mail são obrigatórios" });
 
   try {
-    const professor = await prisma.professor.findFirst({
-      where: { nome: nome.trim(), email: email.trim().toLowerCase() }
-    });
-
+    const professor = professores.find(p => p.nome === nome.trim() && p.email === email.trim().toLowerCase());
     if (!professor) return res.status(401).json({ error: "Nome ou e-mail incorretos" });
 
-    // Para fins de login, retorna o professor com um status 200
     res.status(200).json({ message: "Login realizado com sucesso!", professor });
   } catch (error) {
     console.error("Erro no login do professor:", error);
