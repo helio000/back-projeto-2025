@@ -1,6 +1,25 @@
 {
+  "name": "api",
+  "version": "1.0.0",
+  "main": "api/server.js",
+  "scripts": {
+    "dev": "npx nodemon api/server.js",
+    "postinstall": "prisma generate"
+  },
+  "keywords": [],
+  "author": "helio000",
+  "license": "ISC",
+  "description": "API Node.js com Express e Prisma",
   "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "@prisma/config": "^7.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "prisma": "^6.19.0",
     "serverless-http": "^4.0.0"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }
