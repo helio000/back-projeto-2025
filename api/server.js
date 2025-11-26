@@ -1,25 +1,65 @@
-// api/server.js
+require('dotenv').config();
 const express = require('express');
-const serverless = require('serverless-http'); // npm install serverless-http
+const cors = require('cors');
+
+const Aluno = require('./src/controllers/aluno.js');
+const Professor = require('./src/controllers/professor.js');
+const Planejamento = require('./src/controllers/planejamento.js');
+
 const app = express();
+const port = process.env.PORT || 3100;
+
+// =========================
+// 🔧 Middlewares
+// =========================
+app.use(cors());
 app.use(express.json());
 
-// Seu código de rotas aqui
-let alunos = [];
-let professores = [];
+// =========================
+// 👨‍🎓 ROTAS - ALUNOS
+// =========================
+app.get('/alunos', Aluno.read);
+app.get('/alunos/:id', Aluno.readOne);
+app.post('/alunos', Aluno.create);
+app.put('/alunos/:id', Aluno.update);
+app.patch('/alunos/:id', Aluno.update);  // agora PATCH funciona também
+app.delete('/alunos/:id', Aluno.remove);
 
-app.get('/', (req, res) => res.json({ message: "API funcionando!" }));
+// Login aluno
+app.post('/alunos/login', Aluno.login);
 
-app.post('/alunos', (req, res) => {
-  const { nome, email } = req.body;
-  if (!nome || !email) return res.status(400).json({ error: "Campos obrigatórios" });
-  const id = alunos.length + 1;
-  const aluno = { id, nome, email };
-  alunos.push(aluno);
-  res.status(201).json(aluno);
+// Atualizar notas
+app.put('/alunos/:id/notas', Aluno.updateNotas);
+
+// =========================
+// 👨‍🏫 ROTAS - PROFESSORES
+// =========================
+app.get('/professores', Professor.read);
+app.get('/professores/:id', Professor.readOne);
+app.post('/professores', Professor.create);
+app.put('/professores/:id', Professor.update);
+app.patch('/professores/:id', Professor.update);
+app.delete('/professores/:id', Professor.remove);
+
+// Login professor
+app.post('/professores/login', Professor.loginProfessor);
+
+// =========================
+// 📘 ROTAS - PLANEJAMENTO
+// =========================
+app.get('/planejamentos', Planejamento.read);
+app.post('/planejamentos', Planejamento.create);
+app.put('/planejamentos/:id', Planejamento.update);
+app.delete('/planejamentos/:id', Planejamento.remove);
+
+// =========================
+// 🌐 ROTA INICIAL
+// =========================
+app.get('/', (req, res) => {
+  res.json({ status: "API funcionando!" });
 });
 
-app.get('/alunos', (req, res) => res.json(alunos));
-
-// Exporta como função serverless
-module.exports = serverless(app);
+// =========================
+// 🚀 INICIAR SERVIDOR
+// =========================
+app.listen(port, () => console.log(`Servidor rodando em http://localhost:${port}`));
