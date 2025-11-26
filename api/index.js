@@ -1,13 +1,13 @@
-// api/server.js
 const express = require('express');
 const serverless = require('serverless-http'); // npm install serverless-http
 const app = express();
 app.use(express.json());
 
-// Seu código de rotas aqui
+// Banco em memória
 let alunos = [];
 let professores = [];
 
+// Rotas
 app.get('/', (req, res) => res.json({ message: "API funcionando!" }));
 
 app.post('/alunos', (req, res) => {
