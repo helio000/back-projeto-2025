@@ -1,100 +1,52 @@
+// api/index.js
 const express = require('express');
+const serverless = require('serverless-http'); // precisa instalar: npm install serverless-http
 const app = express();
 app.use(express.json());
 
 let alunos = [];
 let professores = [];
 
-// Função para validar e-mail
-const isValidEmail = (email) => {
-  const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-  return regex.test(email);
-};
+// Funções auxiliares
+const isValidEmail = (email) => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(email);
+const isValidPhone = (telefone) => /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(telefone);
 
-// Função para validar telefone (exemplo de regex para telefone brasileiro)
-const isValidPhone = (telefone) => {
-  const regex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;  // Exemplo: (11) 98765-4321
-  return regex.test(telefone);
-};
-
-// Função para criar aluno ou professor evitando duplicação de código
 const createEntity = (entityType, data, collection) => {
   const { nome, email, telefone, arteMarcial } = data;
-
   if (!nome || !email || !telefone || !arteMarcial)
     return { status: 400, message: "Campos obrigatórios faltando." };
-
-  if (!isValidEmail(email))
-    return { status: 400, message: "E-mail inválido." };
-
-  if (!isValidPhone(telefone))
-    return { status: 400, message: "Telefone inválido." };
-
-  // Verifica se o e-mail já foi cadastrado
-  const existingEntity = collection.find(item => item.email === email);
-  if (existingEntity)
-    return { status: 400, message: `${entityType} já cadastrado com esse e-mail.` };
-
+  if (!isValidEmail(email)) return { status: 400, message: "E-mail inválido." };
+  if (!isValidPhone(telefone)) return { status: 400, message: "Telefone inválido." };
+  const existing = collection.find(e => e.email === email);
+  if (existing) return { status: 400, message: `${entityType} já cadastrado com esse e-mail.` };
   const id = collection.length + 1;
   const entity = { id, nome, email, telefone, arteMarcial };
   collection.push(entity);
   return { status: 201, message: `${entityType} criado com sucesso.`, entity };
 };
 
-// ===== Rota raiz =====
+// Rota raiz
 app.get('/', (req, res) => {
-  res.status(200).json({
-    status: "sucesso",
-    message: "API funcionando! Use /alunos ou /professores"
-  });
+  res.json({ status: "sucesso", message: "API funcionando! Use /alunos ou /professores" });
 });
 
-// ===== Alunos =====
-// Criar aluno
-app.post('/alunos', (req, res) => {
-  const result = createEntity('Aluno', req.body, alunos);
-  res.status(result.status).json(result);
-});
-
-// Listar alunos
-app.get('/alunos', (req, res) => {
-  if (alunos.length === 0) {
-    return res.status(200).json({ status: "sucesso", message: "Nenhum aluno cadastrado." });
-  }
-  res.status(200).json({ status: "sucesso", data: alunos });
-});
-
-// Buscar aluno por ID
+// Rotas alunos
+app.post('/alunos', (req, res) => res.status(createEntity('Aluno', req.body, alunos).status).json(createEntity('Aluno', req.body, alunos)));
+app.get('/alunos', (req, res) => res.json(alunos));
 app.get('/alunos/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const aluno = alunos.find(a => a.id === id);
-  if (!aluno) return res.status(404).json({ status: "erro", message: "Aluno não encontrado" });
-  res.status(200).json({ status: "sucesso", data: aluno });
+  const aluno = alunos.find(a => a.id === parseInt(req.params.id));
+  if (!aluno) return res.status(404).json({ error: "Aluno não encontrado" });
+  res.json(aluno);
 });
 
-// ===== Professores =====
-// Criar professor
-app.post('/professores', (req, res) => {
-  const result = createEntity('Professor', req.body, professores);
-  res.status(result.status).json(result);
-});
-
-// Listar professores
-app.get('/professores', (req, res) => {
-  if (professores.length === 0) {
-    return res.status(200).json({ status: "sucesso", message: "Nenhum professor cadastrado." });
-  }
-  res.status(200).json({ status: "sucesso", data: professores });
-});
-
-// Buscar professor por ID
+// Rotas professores
+app.post('/professores', (req, res) => res.status(createEntity('Professor', req.body, professores).status).json(createEntity('Professor', req.body, professores)));
+app.get('/professores', (req, res) => res.json(professores));
 app.get('/professores/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const professor = professores.find(p => p.id === id);
-  if (!professor) return res.status(404).json({ status: "erro", message: "Professor não encontrado" });
-  res.status(200).json({ status: "sucesso", data: professor });
+  const prof = professores.find(p => p.id === parseInt(req.params.id));
+  if (!prof) return res.status(404).json({ error: "Professor não encontrado" });
+  res.json(prof);
 });
 
-// ===== Servidor =====
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+// Exportar para Vercel
+module.exports.handler = serverless(app);
