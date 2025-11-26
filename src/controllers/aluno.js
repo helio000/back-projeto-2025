@@ -1,7 +1,5 @@
-// api/controllers/alunoController.js
-
-// Importa o Prisma Client singleton
-const prisma = require('../prisma'); // prisma.js que você vai criar (singleton)
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient(); // instância do Prisma
 
 // Criar aluno
 const create = async (req, res) => {
@@ -13,24 +11,16 @@ const create = async (req, res) => {
     }
 
     const dataValida = new Date(datanasc);
-    if (isNaN(dataValida)) {
-      return res.status(400).json({ error: "Data de nascimento inválida." });
-    }
+    if (isNaN(dataValida)) return res.status(400).json({ error: "Data de nascimento inválida." });
 
-    if (!RA) {
-      RA = Math.floor(100000 + Math.random() * 900000);
-    }
+    if (!RA) RA = Math.floor(100000 + Math.random() * 900000);
 
     let existingAluno = null;
     try {
-      existingAluno = await prisma.aluno.findUnique({
-        where: { email: email.trim().toLowerCase() },
-      });
+      existingAluno = await prisma.aluno.findUnique({ where: { email: email.trim().toLowerCase() } });
     } catch (_) {}
 
-    if (existingAluno) {
-      return res.status(400).json({ error: "Já existe um aluno cadastrado com este e-mail." });
-    }
+    if (existingAluno) return res.status(400).json({ error: "Já existe um aluno cadastrado com este e-mail." });
 
     const aluno = await prisma.aluno.create({
       data: {
@@ -50,7 +40,7 @@ const create = async (req, res) => {
   }
 };
 
-// Listar todos os alunos
+// Listar alunos
 const read = async (req, res) => {
   try {
     const alunos = await prisma.aluno.findMany();
@@ -61,7 +51,7 @@ const read = async (req, res) => {
   }
 };
 
-// Buscar aluno pelo ID
+// Buscar aluno por ID
 const readOne = async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ error: "ID inválido" });
@@ -69,7 +59,6 @@ const readOne = async (req, res) => {
   try {
     const aluno = await prisma.aluno.findUnique({ where: { id } });
     if (!aluno) return res.status(404).json({ error: "Aluno não encontrado" });
-
     res.status(200).json(aluno);
   } catch (error) {
     console.error("Erro em readOne aluno:", error);
@@ -116,15 +105,12 @@ const updateNotas = async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ error: "ID inválido" });
 
   const { notaTecnica, notaDisciplina, frequencia } = req.body;
-
   if (
     notaTecnica == null || notaDisciplina == null || frequencia == null ||
     notaTecnica < 0 || notaTecnica > 10 ||
     notaDisciplina < 0 || notaDisciplina > 10 ||
     frequencia < 0 || frequencia > 100
-  ) {
-    return res.status(400).json({ error: "Notas inválidas! As notas devem estar entre 0 e 10 e a frequência entre 0 e 100." });
-  }
+  ) return res.status(400).json({ error: "Notas inválidas! As notas devem estar entre 0 e 10 e a frequência entre 0 e 100." });
 
   try {
     const alunoExistente = await prisma.aluno.findUnique({ where: { id } });

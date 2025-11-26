@@ -1,36 +1,43 @@
-const prisma = require('../prisma'); // importa o prisma singleton
+const { PrismaClient } = require('@prisma/client');
+
 
 // Criar professor
 const create = async (req, res) => {
   try {
     const { nome, email, telefone, arteMarcial, datanasc, cpf } = req.body;
 
+    // Verifica se todos os campos obrigatórios estão presentes
     if (!nome || !email || !telefone || !datanasc || !cpf) {
       return res.status(400).json({ error: "Todos os campos obrigatórios devem ser preenchidos." });
     }
 
-    const existingEmail = await prisma.professor.findUnique({
+    // Verifica se já existe um professor com o mesmo email ou cpf
+    const existing = await prisma.professor.findUnique({
       where: { email: email.trim().toLowerCase() }
     });
-    if (existingEmail) return res.status(400).json({ error: 'Email já existe para outro professor!' });
+    if (existing) return res.status(400).json({ error: 'Email já existe para outro professor!' });
 
-    const existingCpf = await prisma.professor.findUnique({
+    const cpfExists = await prisma.professor.findUnique({
       where: { cpf: cpf.trim() }
     });
-    if (existingCpf) return res.status(400).json({ error: 'CPF já cadastrado!' });
+    if (cpfExists) return res.status(400).json({ error: 'CPF já cadastrado!' });
 
+    // Converte a data de nascimento corretamente
+    const dataNascimento = new Date(datanasc);  // Garantir que a data está no formato correto
+
+    // Criação do professor no banco de dados
     const professor = await prisma.professor.create({
       data: {
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
         telefone: telefone.trim(),
-        arteMarcial: arteMarcial?.trim() || null,
-        datanasc: new Date(datanasc),
+        arteMarcial: arteMarcial?.trim() || null,  // Se não for fornecido, deixa como null
+        datanasc: dataNascimento,
         cpf: cpf.trim()
       },
     });
 
-    res.status(201).json(professor);
+    res.status(201).json(professor); // Retorna o professor criado
   } catch (error) {
     console.error("Erro ao criar professor:", error);
     res.status(500).json({ error: "Erro interno do servidor ao criar professor." });
@@ -50,7 +57,7 @@ const read = async (req, res) => {
 
 // Buscar professor por ID
 const readOne = async (req, res) => {
-  const idNum = Number(req.params.id);
+  const idNum = parseInt(req.params.id);
   if (isNaN(idNum)) return res.status(400).json({ error: "ID inválido" });
 
   try {
@@ -65,30 +72,32 @@ const readOne = async (req, res) => {
 
 // Atualizar professor
 const update = async (req, res) => {
-  const idNum = Number(req.params.id);
+  const idNum = parseInt(req.params.id);
   if (isNaN(idNum)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    const { nome, email, telefone, arteMarcial, datanasc, cpf } = req.body;
+    const { email, cpf, telefone, arteMarcial, datanasc, nome } = req.body;
 
+    // Verifica se já existe outro professor com o mesmo email ou cpf
     if (email) {
-      const existingEmail = await prisma.professor.findUnique({ where: { email: email.trim().toLowerCase() } });
-      if (existingEmail && existingEmail.id !== idNum) return res.status(400).json({ error: 'Email já existe para outro professor!' });
+      const existing = await prisma.professor.findUnique({ where: { email: email.trim().toLowerCase() } });
+      if (existing && existing.id !== idNum) return res.status(400).json({ error: 'Email já existe para outro professor!' });
     }
 
     if (cpf) {
-      const existingCpf = await prisma.professor.findUnique({ where: { cpf: cpf.trim() } });
-      if (existingCpf && existingCpf.id !== idNum) return res.status(400).json({ error: 'CPF já cadastrado!' });
+      const cpfExists = await prisma.professor.findUnique({ where: { cpf: cpf.trim() } });
+      if (cpfExists && cpfExists.id !== idNum) return res.status(400).json({ error: 'CPF já cadastrado!' });
     }
 
+    // Atualiza professor no banco de dados
     const professor = await prisma.professor.update({
       where: { id: idNum },
       data: {
         nome: nome?.trim(),
         email: email?.trim().toLowerCase(),
         telefone: telefone?.trim(),
-        arteMarcial: arteMarcial?.trim() || null,
-        datanasc: datanasc ? new Date(datanasc) : undefined,
+        arteMarcial: arteMarcial?.trim() || null,  // Se não for fornecido, mantém null
+        datanasc: datanasc ? new Date(datanasc) : undefined,  // Caso a data não seja fornecida, não atualiza
         cpf: cpf?.trim()
       },
     });
@@ -102,7 +111,7 @@ const update = async (req, res) => {
 
 // Remover professor
 const remove = async (req, res) => {
-  const idNum = Number(req.params.id);
+  const idNum = parseInt(req.params.id);
   if (isNaN(idNum)) return res.status(400).json({ error: "ID inválido" });
 
   try {
@@ -117,6 +126,7 @@ const remove = async (req, res) => {
 // Login do professor
 const loginProfessor = async (req, res) => {
   const { nome, email } = req.body;
+
   if (!nome || !email) return res.status(400).json({ error: "Nome e e-mail são obrigatórios" });
 
   try {
@@ -126,6 +136,7 @@ const loginProfessor = async (req, res) => {
 
     if (!professor) return res.status(401).json({ error: "Nome ou e-mail incorretos" });
 
+    // Para fins de login, retorna o professor com um status 200
     res.status(200).json({ message: "Login realizado com sucesso!", professor });
   } catch (error) {
     console.error("Erro no login do professor:", error);
