@@ -1,10 +1,19 @@
 // prisma.js
 const { PrismaClient } = require('@prisma/client');
 
-// Cria uma instância única do Prisma
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'], // logs úteis para desenvolvimento
-});
+let prisma;
 
-// Exporta para ser usado em todos os controllers
+if (process.env.NODE_ENV === 'production') {
+  // Em produção, sempre cria uma nova instância
+  prisma = new PrismaClient();
+} else {
+  // Em desenvolvimento, reutiliza a instância para evitar múltiplas conexões
+  if (!global.prisma) {
+    global.prisma = new PrismaClient({
+      log: ['query', 'info', 'warn', 'error'],
+    });
+  }
+  prisma = global.prisma;
+}
+
 module.exports = prisma;
