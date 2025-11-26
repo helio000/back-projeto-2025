@@ -1,4 +1,3 @@
-// Simula o Prisma com arrays em memória
 let alunos = [];
 
 // Criar aluno
@@ -6,18 +5,23 @@ const create = async (req, res) => {
   try {
     let { nome, email, telefone, datanasc, arteMarcial, RA } = req.body;
 
+    // Verificação de campos obrigatórios
     if (!nome || !email || !telefone || !arteMarcial) {
       return res.status(400).json({ error: "Campos obrigatórios faltando." });
     }
 
+    // Validação de data
     const dataValida = datanasc ? new Date(datanasc) : null;
-    if (datanasc && isNaN(dataValida)) return res.status(400).json({ error: "Data inválida." });
+    if (datanasc && isNaN(Date.parse(datanasc))) return res.status(400).json({ error: "Data inválida." });
 
+    // Se RA não foi fornecido, cria um aleatório
     if (!RA) RA = Math.floor(100000 + Math.random() * 900000);
 
+    // Verifica se já existe aluno com o mesmo email ou RA
     const existingAluno = alunos.find(a => a.email === email.trim().toLowerCase() || a.RA === Number(RA));
     if (existingAluno) return res.status(400).json({ error: "Aluno já cadastrado." });
 
+    // Criação do aluno
     const aluno = {
       id: alunos.length + 1,
       nome: nome.trim(),
@@ -26,14 +30,15 @@ const create = async (req, res) => {
       datanasc: dataValida,
       arteMarcial: arteMarcial.trim(),
       RA: Number(RA),
-      matriculas: []
+      matriculas: [] // Pode ser uma lista vazia ou incluir algum dado relevante
     };
 
+    // Adiciona o aluno ao "banco" (array)
     alunos.push(aluno);
 
     res.status(201).json(aluno);
   } catch (error) {
-    console.error("Erro criar aluno:", error);
+    console.error("Erro ao criar aluno:", error);
     res.status(500).json({ error: "Erro interno do servidor." });
   }
 };
