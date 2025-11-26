@@ -1,42 +1,37 @@
-const { PrismaClient } = require('@prisma/client');
+// api/controllers/alunoController.js
 
+// Importa o Prisma Client singleton
+const prisma = require('../prisma'); // prisma.js que você vai criar (singleton)
 
 // Criar aluno
 const create = async (req, res) => {
   try {
     let { nome, email, telefone, datanasc, arteMarcial, RA } = req.body;
 
-    // Validação básica
     if (!nome || !email || !telefone || !datanasc || !arteMarcial) {
       return res.status(400).json({ error: "Todos os campos são obrigatórios." });
     }
 
-    // Validação de data
     const dataValida = new Date(datanasc);
     if (isNaN(dataValida)) {
       return res.status(400).json({ error: "Data de nascimento inválida." });
     }
 
-    // Gera RA caso não venha
     if (!RA) {
       RA = Math.floor(100000 + Math.random() * 900000);
     }
 
-    // Verifica se existe email já cadastrado
     let existingAluno = null;
     try {
       existingAluno = await prisma.aluno.findUnique({
         where: { email: email.trim().toLowerCase() },
       });
-    } catch (_) {
-      // se o campo email não for unique, ignora
-    }
+    } catch (_) {}
 
     if (existingAluno) {
       return res.status(400).json({ error: "Já existe um aluno cadastrado com este e-mail." });
     }
 
-    // Criação do aluno
     const aluno = await prisma.aluno.create({
       data: {
         nome: nome.trim(),
@@ -69,17 +64,11 @@ const read = async (req, res) => {
 // Buscar aluno pelo ID
 const readOne = async (req, res) => {
   const id = parseInt(req.params.id);
-
-  if (isNaN(id)) {
-    return res.status(400).json({ error: "ID inválido" });
-  }
+  if (isNaN(id)) return res.status(400).json({ error: "ID inválido" });
 
   try {
     const aluno = await prisma.aluno.findUnique({ where: { id } });
-
-    if (!aluno) {
-      return res.status(404).json({ error: "Aluno não encontrado" });
-    }
+    if (!aluno) return res.status(404).json({ error: "Aluno não encontrado" });
 
     res.status(200).json(aluno);
   } catch (error) {
@@ -99,9 +88,7 @@ const update = async (req, res) => {
     let dataValida = undefined;
     if (datanasc) {
       dataValida = new Date(datanasc);
-      if (isNaN(dataValida)) {
-        return res.status(400).json({ error: "Data de nascimento inválida." });
-      }
+      if (isNaN(dataValida)) return res.status(400).json({ error: "Data de nascimento inválida." });
     }
 
     const aluno = await prisma.aluno.update({
@@ -158,21 +145,13 @@ const updateNotas = async (req, res) => {
 // Remover aluno
 const remove = async (req, res) => {
   const id = parseInt(req.params.id);
-
-  if (isNaN(id)) {
-    return res.status(400).json({ error: "ID inválido" });
-  }
+  if (isNaN(id)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    // Verifica primeiro se existe
     const existe = await prisma.aluno.findUnique({ where: { id } });
-
-    if (!existe) {
-      return res.status(404).json({ error: "Aluno não encontrado" });
-    }
+    if (!existe) return res.status(404).json({ error: "Aluno não encontrado" });
 
     await prisma.aluno.delete({ where: { id } });
-
     res.status(200).json({ message: "Aluno removido com sucesso" });
   } catch (error) {
     console.error("Erro em remove aluno:", error);
@@ -183,22 +162,14 @@ const remove = async (req, res) => {
 // Login
 const login = async (req, res) => {
   let { nome, email } = req.body;
-
-  if (!nome || !email) {
-    return res.status(400).json({ error: "Nome e e-mail são obrigatórios" });
-  }
+  if (!nome || !email) return res.status(400).json({ error: "Nome e e-mail são obrigatórios" });
 
   nome = nome.trim();
   email = email.trim().toLowerCase();
 
   try {
-    const aluno = await prisma.aluno.findFirst({
-      where: { nome, email }
-    });
-
-    if (!aluno) {
-      return res.status(401).json({ error: "Nome ou e-mail incorretos" });
-    }
+    const aluno = await prisma.aluno.findFirst({ where: { nome, email } });
+    if (!aluno) return res.status(401).json({ error: "Nome ou e-mail incorretos" });
 
     res.status(200).json({ message: "Login realizado com sucesso!", aluno });
   } catch (error) {
