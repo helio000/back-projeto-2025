@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
 
 // Criar matrícula
 const create = async (req, res) => {
