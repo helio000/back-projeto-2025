@@ -7,68 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/* ============================
-   Tabela: Aluno
-   ============================ */
 model Aluno {
-  id          Int          @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   nome        String
-  email       String        @unique
+  email       String      @unique
   telefone    String
   datanasc    DateTime?
   arteMarcial String
-  RA          Int           @unique
-
-  // Relação com Matricula
+  RA          Int         @unique
   matriculas  Matricula[]
 }
 
-/* ============================
-   Tabela: Matricula
-   ============================ */
 model Matricula {
-  id            Int        @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   alunoId       Int
   turmaId       Int
-  dataMatricula DateTime?   @default(dbgenerated("(curdate())")) @db.Date
+  dataMatricula DateTime? @default(dbgenerated("(curdate())")) @db.Date
 
-  // Relações
-  aluno         Aluno       @relation(fields: [alunoId], references: [id])
-  turma         Turma       @relation(fields: [turmaId], references: [id])
+  aluno   Aluno  @relation(fields: [alunoId], references: [id])
+  turma   Turma  @relation(fields: [turmaId], references: [id])
 
-  // Índices
   @@index([alunoId])
   @@index([turmaId])
 }
 
-/* ============================
-   Tabela: Professor
-   ============================ */
 model Professor {
-  id          Int        @id @default(autoincrement())
-  nome        String     @db.VarChar(100)
-  email       String     @unique @db.VarChar(100)
-  telefone    String?    @db.VarChar(20)
-  arteMarcial String?    @db.VarChar(50)
-
-  // Relação com turmas
+  id          Int      @id @default(autoincrement())
+  nome        String   @db.VarChar(100)
+  email       String   @unique @db.VarChar(100)
+  telefone    String?  @db.VarChar(20)
+  arteMarcial String?  @db.VarChar(50)
   turmas      Turma[]
 }
 
-/* ============================
-   Tabela: Turma
-   ============================ */
 model Turma {
-  id          Int         @id @default(autoincrement())
-  nome        String      @db.VarChar(50)
-  arteMarcial String?     @db.VarChar(50)
+  id          Int       @id @default(autoincrement())
+  nome        String    @db.VarChar(50)
+  arteMarcial String?   @db.VarChar(50)
   professorId Int?
 
-  // Relações
   matriculas  Matricula[]
-  professor   Professor?  @relation(fields: [professorId], references: [id])
+  professor   Professor? @relation(fields: [professorId], references: [id])
 
-  // Índice
   @@index([professorId])
 }
-
