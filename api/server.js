@@ -1,19 +1,17 @@
 // api/server.js
 const express = require('express');
-const serverless = require('serverless-http');
-const routes = require('../routes'); // Ajuste o caminho conforme sua estrutura
+const serverless = require('serverless-http'); // npm install serverless-http
+const routes = require('../src/routes'); // Ajuste conforme a estrutura da sua pasta
 
 const app = express();
 app.use(express.json());
 
-// Middleware simples para debug
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
-  next();
-});
+// CORS, caso precise (opcional)
+const cors = require('cors');
+app.use(cors());
 
-// Usando suas rotas
+// Rotas
 app.use('/', routes);
 
-// Exporta para serverless
+// Exporta para Vercel funcionar como serverless
 module.exports.handler = serverless(app);
