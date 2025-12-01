@@ -11,7 +11,6 @@ const create = async (req, res) => {
   const id = alunos.length + 1;
   const aluno = { id, nome, email, telefone, arteMarcial, RA };
   
-  // Evita duplicação de e-mail
   if (alunos.find(a => a.email === email))
     return res.status(400).json({ error: "Aluno já cadastrado com esse e-mail." });
 
@@ -30,7 +29,45 @@ const readOne = async (req, res) => {
   res.status(200).json(aluno);
 };
 
-// Login simples
+// Atualizar aluno
+const update = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const aluno = alunos.find(a => a.id === id);
+  if (!aluno) return res.status(404).json({ error: "Aluno não encontrado" });
+
+  const { nome, email, telefone, arteMarcial } = req.body;
+
+  if (nome) aluno.nome = nome;
+  if (email) aluno.email = email;
+  if (telefone) aluno.telefone = telefone;
+  if (arteMarcial) aluno.arteMarcial = arteMarcial;
+
+  res.status(200).json({ message: "Atualizado com sucesso", aluno });
+};
+
+// Remover aluno
+const remove = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = alunos.findIndex(a => a.id === id);
+  if (index === -1) return res.status(404).json({ error: "Aluno não encontrado" });
+
+  alunos.splice(index, 1);
+  res.status(200).json({ message: "Aluno removido" });
+};
+
+// Atualizar notas
+const updateNotas = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const aluno = alunos.find(a => a.id === id);
+  if (!aluno) return res.status(404).json({ error: "Aluno não encontrado" });
+
+  const { notas } = req.body;
+  aluno.notas = notas;
+
+  res.status(200).json({ message: "Notas atualizadas", aluno });
+};
+
+// Login
 const login = async (req, res) => {
   const { email } = req.body;
   const aluno = alunos.find(a => a.email === email);
@@ -38,4 +75,4 @@ const login = async (req, res) => {
   res.status(200).json({ message: "Login bem-sucedido", aluno });
 };
 
-module.exports = { create, read, readOne, login };
+module.exports = { create, read, readOne, update, remove, updateNotas, login };

@@ -1,7 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-
 module.exports = {
   // Criar um novo planejamento
   async create(req, res) {
@@ -28,19 +27,20 @@ module.exports = {
           diaSemana,
           atividade,
           professorId: Number(professorId),
-          data: new Date(), // Adiciona a data atual do planejamento
+          // ⚠ Só use isto se existir no schema prisma:
+          data: new Date(),
         },
         include: {
           professor: {
-            select: { nome: true, arteMarcial: true }, // Inclui o nome e arte marcial do professor
+            select: { nome: true, arteMarcial: true },
           },
         },
       });
 
-      return res.status(201).json(novo); // Retorna o planejamento criado com status 201
+      return res.status(201).json(novo);
     } catch (error) {
       console.error("Erro ao criar planejamento:", error);
-      return res.status(500).json({ error: "Erro ao criar planejamento" });
+      return res.status(500).json({ error: error.message });
     }
   },
 
@@ -48,12 +48,13 @@ module.exports = {
   async read(req, res) {
     try {
       const planejamentos = await prisma.planejamento.findMany({
-        include: { professor: true }, // Inclui informações do professor
+        include: { professor: true },
       });
-      return res.status(200).json(planejamentos); // Retorna todos os planejamentos com status 200
+
+      return res.status(200).json(planejamentos);
     } catch (error) {
       console.error("Erro ao listar planejamentos:", error);
-      return res.status(500).json({ error: "Erro ao listar planejamentos" });
+      return res.status(500).json({ error: error.message });
     }
   },
 
@@ -63,12 +64,12 @@ module.exports = {
       const { id } = req.params;
       const { diaSemana, atividade } = req.body;
 
-      // Verifica se os dados necessários estão presentes
       if (!diaSemana || !atividade) {
-        return res.status(400).json({ error: "Dia da semana e atividade são obrigatórios!" });
+        return res.status(400).json({
+          error: "Dia da semana e atividade são obrigatórios!",
+        });
       }
 
-      // Verifica se o planejamento existe
       const planejamentoExistente = await prisma.planejamento.findUnique({
         where: { id: Number(id) },
       });
@@ -77,21 +78,20 @@ module.exports = {
         return res.status(404).json({ error: "Planejamento não encontrado!" });
       }
 
-      // Atualiza o planejamento
       const atualizado = await prisma.planejamento.update({
         where: { id: Number(id) },
         data: { diaSemana, atividade },
         include: {
           professor: {
-            select: { nome: true, arteMarcial: true }, // Inclui informações do professor
+            select: { nome: true, arteMarcial: true },
           },
         },
       });
 
-      return res.status(200).json(atualizado); // Retorna o planejamento atualizado com status 200
+      return res.status(200).json(atualizado);
     } catch (error) {
       console.error("Erro ao atualizar planejamento:", error);
-      return res.status(500).json({ error: "Erro ao atualizar planejamento" });
+      return res.status(500).json({ error: error.message });
     }
   },
 
@@ -100,7 +100,6 @@ module.exports = {
     try {
       const { id } = req.params;
 
-      // Verifica se o planejamento existe
       const planejamentoExistente = await prisma.planejamento.findUnique({
         where: { id: Number(id) },
       });
@@ -109,7 +108,6 @@ module.exports = {
         return res.status(404).json({ error: "Planejamento não encontrado!" });
       }
 
-      // Exclui o planejamento
       await prisma.planejamento.delete({
         where: { id: Number(id) },
       });
@@ -117,7 +115,7 @@ module.exports = {
       return res.status(200).json({ message: "Planejamento excluído com sucesso!" });
     } catch (error) {
       console.error("Erro ao excluir planejamento:", error);
-      return res.status(500).json({ error: "Erro ao excluir planejamento" });
+      return res.status(500).json({ error: error.message });
     }
   },
 };
