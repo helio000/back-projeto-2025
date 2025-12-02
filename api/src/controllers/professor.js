@@ -58,4 +58,58 @@ const readOne = async (req, res) => {
   }
 };
 
-module.exports = { create, read, readOne };
+// Atualizar professor
+const update = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "ID inválido." });
+    }
+
+    const professorIndex = professores.findIndex(p => p.id === id);
+
+    if (professorIndex === -1) {
+      return res.status(404).json({ error: "Professor não encontrado." });
+    }
+
+    const { nome, email, telefone, arteMarcial } = req.body;
+
+    const professorAtualizado = {
+      ...professores[professorIndex],
+      nome: nome ?? professores[professorIndex].nome,
+      email: email ?? professores[professorIndex].email,
+      telefone: telefone ?? professores[professorIndex].telefone,
+      arteMarcial: arteMarcial ?? professores[professorIndex].arteMarcial,
+    };
+
+    professores[professorIndex] = professorAtualizado;
+
+    return res.status(200).json(professorAtualizado);
+  } catch (error) {
+    console.error("Erro ao atualizar professor:", error);
+    return res.status(500).json({ error: "Erro interno ao atualizar professor." });
+  }
+};
+
+// Remover professor
+const remove = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const professorIndex = professores.findIndex(p => p.id === id);
+
+    if (professorIndex === -1) {
+      return res.status(404).json({ error: "Professor não encontrado." });
+    }
+
+    professores.splice(professorIndex, 1);
+
+    return res.status(200).json({ message: "Professor removido com sucesso." });
+  } catch (error) {
+    console.error("Erro ao remover professor:", error);
+    return res.status(500).json({ error: "Erro interno ao remover professor." });
+  }
+};
+
+module.exports = { create, read, readOne, update, remove };
