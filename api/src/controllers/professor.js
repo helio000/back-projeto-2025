@@ -112,4 +112,29 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { create, read, readOne, update, remove };
+// 🔥 LOGIN DO PROFESSOR (APENAS ADICIONADO)
+const login = async (req, res) => {
+  try {
+    const { nome, email } = req.body;
+
+    if (!nome || !email) {
+      return res.status(400).json({ error: "Nome e e-mail são obrigatórios." });
+    }
+
+    const professor = professores.find(
+      p => p.email === email && p.nome.toLowerCase() === nome.toLowerCase()
+    );
+
+    if (!professor) {
+      return res.status(400).json({ error: "Professor não encontrado." });
+    }
+
+    return res.status(200).json({ professor });
+
+  } catch (error) {
+    console.error("Erro ao fazer login:", error);
+    return res.status(500).json({ error: "Erro interno no login." });
+  }
+};
+
+module.exports = { create, read, readOne, update, remove, login };
