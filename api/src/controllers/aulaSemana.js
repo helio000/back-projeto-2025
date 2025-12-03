@@ -1,118 +1,115 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-
 module.exports = {
-  // Criar um novo planejamento
+  // Criar aula da semana
   async create(req, res) {
     try {
-      const { diaSemana, atividade, professorId } = req.body;
+      const { dia, horario, turmaId } = req.body;
 
-      // Verifica se o professor existe
-      const professorExistente = await prisma.professor.findUnique({
-        where: { id: professorId },
-      });
-
-      if (!professorExistente) {
-        return res.status(404).json({ error: "Professor não encontrado." });
+      if (!dia || !horario || !turmaId) {
+        return res.status(400).json({ error: "Todos os campos são obrigatórios." });
       }
 
-      // Criação do planejamento
-      const planejamento = await prisma.planejamento.create({
+      const turmaExiste = await prisma.turma.findUnique({
+        where: { id: Number(turmaId) },
+      });
+
+      if (!turmaExiste) {
+        return res.status(404).json({ error: "Turma não encontrada." });
+      }
+
+      const aula = await prisma.aulaSemana.create({
         data: {
-          diaSemana,
-          atividade,
-          professorId: Number(professorId), // Garante que professorId seja um número
+          dia,
+          horario,
+          turmaId: Number(turmaId),
+        },
+        include: {
+          turma: true,
         },
       });
 
-      return res.status(201).json(planejamento);
+      return res.status(201).json(aula);
     } catch (error) {
-      console.error("Erro ao criar planejamento:", error);
-      return res.status(500).json({ error: "Erro ao criar planejamento" });
+      console.error("Erro ao criar aula da semana:", error);
+      return res.status(500).json({ error: "Erro ao criar aula da semana." });
     }
   },
 
-  // Listar todos os planejamentos
+  // Listar aulas da semana
   async read(req, res) {
     try {
-      const planejamentos = await prisma.planejamento.findMany({
-        include: {
-          professor: true, // Inclui as informações do professor associado
-        },
+      const aulas = await prisma.aulaSemana.findMany({
+        include: { turma: true },
       });
-      return res.json(planejamentos);
+      return res.status(200).json(aulas);
     } catch (error) {
-      console.error("Erro ao listar planejamentos:", error);
-      return res.status(500).json({ error: "Erro ao listar planejamentos" });
+      console.error("Erro ao listar aulas:", error);
+      return res.status(500).json({ error: "Erro ao listar aulas da semana." });
     }
   },
 
-  // Mostrar um planejamento específico
+  // Listar 1 aula específica
   async readOne(req, res) {
     try {
       const { id } = req.params;
-      const planejamento = await prisma.planejamento.findUnique({
+
+      const aula = await prisma.aulaSemana.findUnique({
         where: { id: Number(id) },
-        include: {
-          professor: true, // Inclui as informações do professor associado
-        },
+        include: { turma: true },
       });
 
-      if (!planejamento) {
-        return res.status(404).json({ error: "Planejamento não encontrado" });
+      if (!aula) {
+        return res.status(404).json({ error: "Aula não encontrada." });
       }
 
-      return res.json(planejamento);
+      return res.json(aula);
     } catch (error) {
-      console.error("Erro ao buscar planejamento:", error);
-      return res.status(500).json({ error: "Erro ao buscar planejamento" });
+      console.error("Erro ao buscar aula:", error);
+      return res.status(500).json({ error: "Erro ao buscar aula da semana." });
     }
   },
 
-  // Atualizar um planejamento (ex: professor altera aula)
+  // Atualizar aula da semana
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { diaSemana, atividade } = req.body;
+      const { dia, horario } = req.body;
 
-      // Atualização do planejamento
-      const atualizado = await prisma.planejamento.update({
+      const aula = await prisma.aulaSemana.update({
         where: { id: Number(id) },
-        data: {
-          diaSemana,
-          atividade,
-        },
+        data: { dia, horario },
       });
 
-      return res.json(atualizado);
+      return res.json(aula);
     } catch (error) {
-      console.error("Erro ao atualizar planejamento:", error);
-      return res.status(500).json({ error: "Erro ao atualizar planejamento" });
+      console.error("Erro ao atualizar aula:", error);
+      return res.status(500).json({ error: "Erro ao atualizar aula da semana." });
     }
   },
 
-  // Remover um planejamento
+  // Remover aula da semana
   async remove(req, res) {
     try {
       const { id } = req.params;
 
-      // Verifica se o planejamento existe
-      const planejamentoExistente = await prisma.planejamento.findUnique({
+      const aula = await prisma.aulaSemana.findUnique({
         where: { id: Number(id) },
       });
 
-      if (!planejamentoExistente) {
-        return res.status(404).json({ error: "Planejamento não encontrado" });
+      if (!aula) {
+        return res.status(404).json({ error: "Aula não encontrada." });
       }
 
-      // Remoção do planejamento
-      await prisma.planejamento.delete({ where: { id: Number(id) } });
+      await prisma.aulaSemana.delete({
+        where: { id: Number(id) },
+      });
 
-      return res.status(204).send(); // 204 No Content
+      return res.status(204).send();
     } catch (error) {
-      console.error("Erro ao remover planejamento:", error);
-      return res.status(500).json({ error: "Erro ao remover planejamento" });
+      console.error("Erro ao remover aula:", error);
+      return res.status(500).json({ error: "Erro ao remover aula da semana." });
     }
   },
 };
