@@ -30,7 +30,7 @@ routes.put('/alunos/:id/notas', Aluno.updateNotas);
       PROFESSORES
 =========================== */
 
-// 🔥 ADICIONAR LOGIN AQUI
+// LOGIN DO PROFESSOR (precisa vir antes das rotas com :id)
 routes.post('/professores/login', Professor.login);
 
 routes.post('/professores', Professor.create);
