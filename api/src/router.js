@@ -16,7 +16,6 @@ routes.get('/', (req, res) => {
       ALUNOS
 =========================== */
 
-// Login precisa vir ANTES das rotas com :id para não dar conflito
 routes.post('/alunos/login', Aluno.login);
 
 routes.post('/alunos', Aluno.create);
@@ -30,6 +29,10 @@ routes.put('/alunos/:id/notas', Aluno.updateNotas);
 /* ===========================
       PROFESSORES
 =========================== */
+
+// 🔥 ADICIONAR LOGIN AQUI
+routes.post('/professores/login', Professor.login);
+
 routes.post('/professores', Professor.create);
 routes.get('/professores', Professor.read);
 routes.get('/professores/:id', Professor.readOne);

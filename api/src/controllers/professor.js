@@ -9,7 +9,6 @@ const create = async (req, res) => {
       return res.status(400).json({ error: "Campos obrigatórios faltando." });
     }
 
-    // Verifica Professor duplicado
     if (professores.find(p => p.email === email)) {
       return res.status(400).json({ error: "Professor já cadastrado com esse e-mail." });
     }
@@ -112,7 +111,7 @@ const remove = async (req, res) => {
   }
 };
 
-// 🔥 LOGIN DO PROFESSOR (APENAS ADICIONADO)
+// 🔥 LOGIN DO PROFESSOR (APENAS SEM MUDAR ESTRUTURA)
 const login = async (req, res) => {
   try {
     const { nome, email } = req.body;
@@ -122,15 +121,16 @@ const login = async (req, res) => {
     }
 
     const professor = professores.find(
-      p => p.email === email && p.nome.toLowerCase() === nome.toLowerCase()
+      p =>
+        p.email === email &&
+        p.nome.toLowerCase().trim() === nome.toLowerCase().trim()
     );
 
     if (!professor) {
       return res.status(400).json({ error: "Professor não encontrado." });
     }
 
-    return res.status(200).json({ professor });
-
+    return res.status(200).json({ message: "Login realizado com sucesso!", professor });
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     return res.status(500).json({ error: "Erro interno no login." });
