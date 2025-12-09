@@ -56,8 +56,9 @@ model Turma {
 }
 
 model Planejamento {
-  id          Int      @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   diaSemana   String
   atividade   String
   professorId Int
+  professor   Professor  @relation(fields: [professorId], references: [id])
 }
